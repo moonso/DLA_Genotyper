@@ -3,7 +3,7 @@
 """
 checkAlleles.py
 
-Take the alleles found in the individuals and create two dictionarys one on the form {<sequence> : alleleID} and one with {individualNr : [alleleId:s]}, also print to a file on the form:
+Take the alleles found in the individuals and create two dictionarys one on the form {<sequence> : alleleID} and one with {<individualNr> : [alleleId:s]}, also print to a file on the form:
 
 nr	ID	Species	Type(homo/hetero)	Allele1		Allele2
 

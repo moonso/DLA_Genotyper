@@ -3,7 +3,7 @@
 """
 add_tags.py
 
-Need to find the complete tag sequences and add those to all references.
+Add the complete tag sequences to all references.
 
 Created by Måns Magnusson on 2012-03-02.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.

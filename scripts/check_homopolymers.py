@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-untitled.py
+check_homopolymers.py
+
+Count the number of homopolymers in the problematic middle region of the sequence.
 
 Created by Måns Magnusson on 2012-11-30.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.

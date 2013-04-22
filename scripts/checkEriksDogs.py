@@ -3,6 +3,8 @@
 """
 checkEriksDogs.py
 
+Compare the sequences that Erik worked with to ours.
+
 Created by Måns Magnusson on 2012-03-29.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 """

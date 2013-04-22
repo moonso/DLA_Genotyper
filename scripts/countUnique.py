@@ -3,9 +3,9 @@
 """
 countIdentical.py
 
-Maybe produce statistics for all different kinds of things that can be interresting like number of reads per individual and so on.
 Count the number of unique reads in a fasta file.
 
+'-' should count as a wild card?
 
 Created by Måns Magnusson on 2012-05-21.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.

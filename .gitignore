@@ -49,3 +49,4 @@ nosetests.xml
 #Textmate
 
 *.tmproj
+notes*
