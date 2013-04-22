@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-Sequences.py
+sequence.py
 
 This is a class that will have info and methods for dealing with sequences.
-The primary function is to store the sequences, this is done in a dictionary called seq_dict.
 
 Created by Måns Magnusson on 2012-03-10.
 Copyright (c) 2012 __MyCompanyName__. All rights reserved.
@@ -20,23 +19,7 @@ class Sequences:
 	def __init__(self, sequences, mode = 'file'):
 		self.seq_dict			= {}
 		if mode == 'file':
-			seq_id						= ""
-			sequence					= ""
-			beginning 					= True
-			for line in open(sequences,'r'):
-				line=line.rstrip()
-				if len(line)>0:
-					if beginning:
-						seq_id		= line[1:]
-						beginning	= False
-					else:
-						if line[0] == ">":
-							self.seq_dict[seq_id]	= sequence
-							seq_id					= line[1:]
-							sequence 				= ''
-						elif line[0] != ">": 
-							sequence				+=line
-			self.seq_dict[seq_id]		= sequence
+			
 		elif mode == 'dict':
 			self.seq_dict			= sequences
 		self.nr_of_seq				= len(self.seq_dict)
