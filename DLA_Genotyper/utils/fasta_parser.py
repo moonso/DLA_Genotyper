@@ -12,13 +12,13 @@ Copyright (c) 2013 __MyCompanyName__. All rights reserved.
 import sys
 import os
 import argparse
-from DLA_Genotyper.sequence import sequence
+from DLA_Genotyper.sequences import Sequences
 
 class Fasta_Parser(object):
 	"""Parse a fasta file"""
 	def __init__(self, fasta_file):
 		super(Fasta_Parser, self).__init__()
-		self.sequences = {}
+		self.sequences = Sequences()
 		with open(fasta_file, 'r') as f:
 			seq_id = ""
 			sequence = ""
@@ -31,12 +31,12 @@ class Fasta_Parser(object):
 						beginning = False
 					else:
 						if line[0] == ">":
-							self.sequences[seq_id] = sequence
+							self.sequences.add_sequence(seq_id, sequence)
 							seq_id = line[1:]
 							sequence = ""
 						else: 
 							sequence += line
-			self.seq_dict[seq_id] = sequence
+			self.sequences.add_sequence(seq_id, sequence)
 	
 
 def main():
@@ -44,6 +44,8 @@ def main():
 	parser.add_argument('fasta_file', type=str, nargs=1, help='Specify the the path to a fasta file containing sequences.')
 	args = parser.parse_args()
 	my_fasta_sequences = Fasta_Parser(args.fasta_file[0])
+	my_sequences = my_fasta_sequences.sequences
+	my_sequences.find_alleles()
 
 if __name__ == '__main__':
 	main()

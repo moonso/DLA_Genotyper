@@ -37,13 +37,12 @@ import numpy as np
 
 class Individual:
 	"""Sequences"""
-	def __init__(self, seq_file, old_alleles, individual, treshold = 0.35):
+	def __init__(self, individual_id, sequences, treshold = 0.35):
 		"""Put all sequences in a dictionary on the form:{<seqId>:<sequence>}"""
-		self.individual				= individual# This is the numerical id of this individual
+		self.individual				= individual_id# This is the numerical id of this individual
 		self.heterozygote			= True
-		self.sequences				= Sequences.Sequences(seq_file)# Dict. with the sequences for the ind. like {<seqId>:<sequence>}
-		self.old_alleles			= Sequences.Sequences(old_alleles)# Dict. with the known sequences like {<seqId>:<sequence>}
-		self.nr_of_seq				= self.sequences.nr_of_seq
+		self.sequences				= sequences# Sequences object with the sequences for the ind. like {<seqId>:<sequence>}
+		# self.old_alleles			= old_alleles# Dict. with the known sequences like {<seqId>:<sequence>}
 		self.var_pos_treshold		= treshold
 		self.allele_candidates		= [] # Holds two Sequence objects, one for each set of sequences.
 		self.allele_1				= ''
