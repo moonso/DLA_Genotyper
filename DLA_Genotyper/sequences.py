@@ -146,23 +146,6 @@ class Sequences:
 			elif position in [4,5]:
 				self.consensus += '-'
 	
-	def get_highest_frequency(self, frequencies):
-		"""Returns the nucleotide with the highest frequency."""
-		highest = 0
-		for i in range(len(frequencies)):
-			if frequencies[i] > highest:
-				highest = i
-		if highest == 0:
-			return 'A'
-		elif highest == 1:
-			return 'C'
-		elif highest == 2:
-			return 'G'
-		elif highest == 3:
-			return 'T'
-		elif highest == 4:
-			return '-'
-	
 	def print_sequences(self):
 		"""Prints the sequences to strdout"""
 		for ids,seq in self.seq_dict.items():
@@ -173,31 +156,72 @@ class Sequences:
 	
 	def find_alleles(self):
 		"""Find the alleles for these sequences."""
+		
+		def get_highest_frequency(frequencies):
+			"""Returns the nucleotide with the highest frequency."""
+			highest = 0
+			highest_freq = 0
+			for i in range(len(frequencies)):
+				if frequencies[i] > highest_freq:
+					highest = i
+					highest_freq = frequencies[i]
+			if highest == 0:
+				return 'A'
+			elif highest == 1:
+				return 'C'
+			elif highest == 2:
+				return 'G'
+			elif highest == 3:
+				return 'T'
+			elif highest == 4:
+				return '-'
+		
 		self.make_own_frequencies()
 		self.find_variable_positions()
 		previous_position = 0
+		# We look at every position in the sequence and add them to both alleles if not variable
 		for position in range(1,len(self.frequence_dict)+1):
+			# If the position is variable we sort the sequences based on the previous variable position
 			if position in self.variable_positions:
+				# If this is the first variable position we add one of each variation to the alleles
 				if previous_position != 0:
 					freq_dicts = []
-					sequence_groups = self.sort_sequences(position)
+					# Sort the sequences based on their variation in the previous variable position
+					sequence_groups = self.sort_sequences(previous_position)
 					for group in sequence_groups:
+						# Turn the dictionary into a sequence dict
 						sequence_dict = self.make_seq_dict(sequence_groups[group])
+						# Make new frequences of the new sequence dict
 						freq_dicts.append(self.make_frequencies(sequence_dict))
 					for freq in freq_dicts:
-						print position
-						print freq[position]
+						# If the previous variable position for this group is the same as in allele 1 then add the new nucleotide for this group to allele 1, else to allele 2. 
+						if get_highest_frequency(freq[previous_position]) == self.allele_1[previous_position-1]:
+							self.allele_1 += get_highest_frequency(freq[position])
+						else:
+							self.allele_2 += get_highest_frequency(freq[position])
 					previous_position = position
 				else:
+					# If this is the first variable position, add one variant to each.
 					self.allele_1 += self.variable_positions[position][0]
 					self.allele_2 += self.variable_positions[position][1]
 					previous_position = position
 			else:
-				nucleotide = self.get_highest_frequency(self.frequence_dict[position])
+				nucleotide = get_highest_frequency(self.frequence_dict[position])
 				self.allele_1 += nucleotide
 				self.allele_2 += nucleotide
+		for i in range(len(self.allele_1)):
+			if self.allele_1[i] != self.allele_2[i]:
+				print i, self.allele_1[i], self.allele_2[i]
 		print self.allele_1
 		print self.allele_2
+	
+	def print_fasta(self, fasta_file, ind_id):
+		"""Print the sequences to the end of a fasta file"""
+		f = open(fasta_file, 'a')
+		f.write('>'+ ind_id + '_1\n')
+		f.write(self.allele_1+'\n')
+		f.write('>'+ ind_id + '_2\n')
+		f.write(self.allele_2+'\n')
 
 
 def main():

@@ -1,4 +1,6 @@
 *.py[cod]
+*.fa
+*.fasta
 
 # C extensions
 *.so

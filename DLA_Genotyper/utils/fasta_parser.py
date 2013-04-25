@@ -42,10 +42,15 @@ class Fasta_Parser(object):
 def main():
 	parser = argparse.ArgumentParser(description="Put the fasta files in a dictionar")
 	parser.add_argument('fasta_file', type=str, nargs=1, help='Specify the the path to a fasta file containing sequences.')
+	parser.add_argument('-write_alleles', '--write_alleles', type=str, nargs=1, help='Specify the path to a fastafile where we write the results.')
 	args = parser.parse_args()
-	my_fasta_sequences = Fasta_Parser(args.fasta_file[0])
+	infile = args.fasta_file[0]
+	ind_id = os.path.basename(infile)[:-3]
+	my_fasta_sequences = Fasta_Parser(infile)
 	my_sequences = my_fasta_sequences.sequences
 	my_sequences.find_alleles()
+	if args.write_alleles:
+		my_sequences.print_fasta(args.write_alleles[0], ind_id)
 
 if __name__ == '__main__':
 	main()
