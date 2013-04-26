@@ -11,6 +11,7 @@ Copyright (c) 2013 __MyCompanyName__. All rights reserved.
 
 import sys
 import os
+import glob
 import argparse
 from DLA_Genotyper.sequences import Sequences
 
@@ -47,17 +48,39 @@ class Fasta_Parser(object):
 		"""Return the sequence obejct"""
 		return self.sequences
 	
+	def write_alleles(self, out_file):
+		"""Print the alleles to a fasta file"""
+		self.sequences.print_fasta(out_file, self.ind_id)
 
+def write_alleles(file_handle, ind_id, sequence_1, sequence_2):
+	"""Write the alleles to a file in fasta format"""
+	file_handle.write('>'+ ind_id + '_1\n')
+	file_handle.write(sequence_1+'\n')
+	file_handle.write('>'+ ind_id + '_2\n')
+	file_handle.write(sequence_2+'\n')
+	
 def main():
 	parser = argparse.ArgumentParser(description="Put the fasta files in a dictionar")
-	parser.add_argument('fasta_file', type=str, nargs=1, help='Specify the the path to a fasta file containing sequences.')
+	parser.add_argument('fasta_file', type=str, nargs=1, help='Specify the the path to a fasta file containing sequences or a directory with fasta files.')
 	parser.add_argument('-write_alleles', '--write_alleles', type=str, nargs=1, help='Specify the path to a fastafile where we write the results.')
 	args = parser.parse_args()
-	infile = args.fasta_file[0]
-	my_fasta_sequences = Fasta_Parser(infile)
-	my_fasta_sequences.find_alleles()
+	path_indata = args.fasta_file[0]
 	if args.write_alleles:
-		my_sequences.print_fasta(args.write_alleles[0], ind_id)
+		file_handle = open(args.write_alleles[0], 'a')
+	if os.path.isdir(path_indata):
+		for infile in glob.glob(os.path.join(path_indata, '*.fa')):
+			if os.path.getsize(infile) > 0:
+				my_fasta_sequences = Fasta_Parser(infile)
+				print 'individual:', my_fasta_sequences.ind_id
+				my_fasta_sequences.find_alleles()
+				if args.write_alleles:
+					write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
+	else:
+		infile = path_indata
+		my_fasta_sequences = Fasta_Parser(infile)
+		my_fasta_sequences.find_alleles()
+		if args.write_alleles:
+			write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
 
 if __name__ == '__main__':
 	main()
