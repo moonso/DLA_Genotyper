@@ -17,10 +17,10 @@ from DLA_Genotyper.sequences import Sequences
 
 class Fasta_Parser(object):
 	"""Parse a fasta file"""
-	def __init__(self, fasta_file):
+	def __init__(self, fasta_file, variable_positions_treshold=0.2):
 		super(Fasta_Parser, self).__init__()
 		self.ind_id = os.path.basename(fasta_file)[:-3]
-		self.sequences = Sequences()
+		self.sequences = Sequences(variable_positions_treshold=variable_positions_treshold)
 		with open(fasta_file, 'r') as f:
 			seq_id = ""
 			sequence = ""
@@ -44,6 +44,10 @@ class Fasta_Parser(object):
 		"""Find the alleles of this individual"""
 		self.sequences.find_alleles()
 	
+	def count_frequencies(self):
+		"""Count the frequencies for each position and print to stdout"""
+		self.sequences.count_frequencies()
+	
 	def get_sequences(self):
 		"""Return the sequence obejct"""
 		return self.sequences
@@ -63,6 +67,8 @@ def main():
 	parser = argparse.ArgumentParser(description="Put the fasta files in a dictionar")
 	parser.add_argument('fasta_file', type=str, nargs=1, help='Specify the the path to a fasta file containing sequences or a directory with fasta files.')
 	parser.add_argument('-write_alleles', '--write_alleles', type=str, nargs=1, help='Specify the path to a fastafile where we write the results.')
+	parser.add_argument('-find_alleles', '--find_alleles', action='store_true', help='Find the alleles for the individual/individuals')	
+	parser.add_argument('-count_frequencies', '--count_frequencies', action='store_true', help='Count the frequencies for the positions in the give fasta file')	
 	args = parser.parse_args()
 	path_indata = args.fasta_file[0]
 	if args.write_alleles:
@@ -72,15 +78,22 @@ def main():
 			if os.path.getsize(infile) > 0:
 				my_fasta_sequences = Fasta_Parser(infile)
 				print 'individual:', my_fasta_sequences.ind_id
-				my_fasta_sequences.find_alleles()
-				if args.write_alleles:
-					write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
+				if args.find_alleles:
+					my_fasta_sequences.find_alleles()
+					if args.write_alleles:
+						write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
+				elif args.count_frequencies:
+					my_fasta_sequences.count_frequencies()
 	else:
 		infile = path_indata
-		my_fasta_sequences = Fasta_Parser(infile)
-		my_fasta_sequences.find_alleles()
-		if args.write_alleles:
-			write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
+		if args.find_alleles:
+			my_fasta_sequences = Fasta_Parser(infile)
+			my_fasta_sequences.find_alleles()
+			if args.write_alleles:
+				write_alleles(file_handle, my_fasta_sequences.ind_id, my_fasta_sequences.sequences.allele_1, my_fasta_sequences.sequences.allele_2)
+		elif args.count_frequencies:
+			my_fasta_sequences = Fasta_Parser(infile, variable_positions_treshold=0.00001)
+			my_fasta_sequences.count_frequencies()
 
 if __name__ == '__main__':
 	main()

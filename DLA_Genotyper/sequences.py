@@ -70,6 +70,14 @@ class Sequences:
 			frequence_dict[pos]=[A,C,G,T,N]
 		return frequence_dict
 	
+	def count_frequencies(self):
+		"""Count the frequency for each position and print to stdout."""
+		self.make_own_frequencies()
+		self.find_variable_positions()
+		for position in sorted(self.frequence_dict.keys()):
+			print position, self.frequence_dict[position]
+		print 'Number of variable positions:', len(self.variable_positions)
+	
 	def make_seq_dict(self, seq_ids):
 		"""Make a sequence dict from the sequence ids in a list."""
 		seq_dict	= {}
@@ -79,36 +87,35 @@ class Sequences:
 	
 	def find_variable_positions(self):
 		"""Picks out the variable positions, based on the frequence of the positions in one individual."""
-		def get_variants(frequency, variable_positions_treshold):
+		def get_variants(frequencies):
 			"""Returns a string with the nucloetides, eg. 'AC'"""
 			variants	= ''
-			if frequency[0] > variable_positions_treshold:
-				variants	+= 'A'
-			if frequency[1] > variable_positions_treshold:
-				variants	+= 'C'
-			if frequency[2] > variable_positions_treshold:
-				variants	+= 'G'
-			if frequency[3] > variable_positions_treshold:
-				variants	+= 'T'
+			# Pick out the two most abundant nucleotides
+			sorted_frequencies = sorted(frequencies[:4])[2:]
+			if frequencies[0] in sorted_frequencies:
+				if len(variants) < 2:
+					variants	+= 'A'
+			if frequencies[1] in sorted_frequencies:
+				if len(variants) < 2:
+					variants	+= 'C'
+			if frequencies[2] in sorted_frequencies:
+				if len(variants) < 2:
+					variants	+= 'G'
+			if frequencies[3] in sorted_frequencies:
+				if len(variants) < 2:
+					variants	+= 'T'
 			return variants
-		
-		def indel_position(position):
-			"""Returns a boolean depending on if the position has more than 10% indels or if the two positions surrounding the present have more than 10% indels. Input: A dictionary with freq for each position Output: A boolean depending on if the positions are variable"""
-			indel_position	= False
-			for i in range(position-1,position+2):
-				if self.frequence_dict[i][4] > 0.1: #If more than 10% of sequences have indel in any position around.
-					indel_position = True
-			return indel_position
 		
 		for pos in self.frequence_dict:
 		#We look at the second max so we can see if there is distribution
 		#between more than one nucleotide.
-			if pos > 30 and pos < 270:# Avoid looking at the tags
-				if not indel_position(pos):
-					variants	= get_variants(self.frequence_dict[pos], self.variable_positions_treshold)#Variants is a string with the two bases.
-					second_max	= sorted(self.frequence_dict[pos][:4])[2]
-					if second_max > self.variable_positions_treshold:
-						self.variable_positions[pos] = variants
+			if pos > 20 and pos < 280:# Avoid looking at the tags. Front tag is 16bp and end 17bp
+			# Only look at the distribution between the nucleotides, not indels:
+				second_max	= sorted(self.frequence_dict[pos][:4])[2]
+				if second_max > self.variable_positions_treshold:
+					variants	= get_variants(self.frequence_dict[pos])
+					self.variable_positions[pos] = variants
+					#Variants is a string with the two bases.
 	
 	def sort_sequences(self, position):
 		"""Divide the sequences into groups based on the position given. Returns a list with two sequence dictionarys."""
@@ -178,6 +185,7 @@ class Sequences:
 		
 		self.make_own_frequencies()
 		self.find_variable_positions()
+		print sorted(self.variable_positions.keys())
 		previous_position = 0
 		# We look at every position in the sequence and add them to both alleles if not variable
 		for position in range(1,len(self.frequence_dict)+1):
@@ -193,12 +201,27 @@ class Sequences:
 						sequence_dict = self.make_seq_dict(sequence_groups[group])
 						# Make new frequences of the new sequence dict
 						freq_dicts.append(self.make_frequencies(sequence_dict))
-					for freq in freq_dicts:
-						# If the previous variable position for this group is the same as in allele 1 then add the new nucleotide for this group to allele 1, else to allele 2. 
-						if get_highest_frequency(freq[previous_position]) == self.allele_1[previous_position-1]:
-							self.allele_1 += get_highest_frequency(freq[position])
+					# If the previous variable position for this group is the same as in allele 1 then add the new nucleotide for this group to allele 1, else to allele 2.
+					# Find which of the groups that have the strongest vote for its nucleotide:
+					if sorted(freq_dicts[0][position])[-1] > sorted(freq_dicts[1][position])[-1]:
+						group_1_nucleotide = get_highest_frequency(freq_dicts[0][position])
+						if group_1_nucleotide == self.variable_positions[position][0]:
+							group_2_nucleotide = self.variable_positions[position][1]
 						else:
-							self.allele_2 += get_highest_frequency(freq[position])
+							group_2_nucleotide = self.variable_positions[position][0]
+					else:
+						group_2_nucleotide = get_highest_frequency(freq_dicts[1][position])
+						if group_2_nucleotide == self.variable_positions[position][0]:
+							group_1_nucleotide = self.variable_positions[position][1]
+						else:
+							group_1_nucleotide = self.variable_positions[position][0]
+					if get_highest_frequency(freq_dicts[0][previous_position]) == self.allele_1[previous_position-1]:
+						self.allele_1 += group_1_nucleotide
+						self.allele_2 += group_2_nucleotide
+					else:
+						self.allele_1 += group_2_nucleotide
+						self.allele_2 += group_1_nucleotide
+
 					previous_position = position
 				else:
 					# If this is the first variable position, add one variant to each.
@@ -206,14 +229,10 @@ class Sequences:
 					self.allele_2 += self.variable_positions[position][1]
 					previous_position = position
 			else:
+				# If not variable position we add the nucleotide with the highest frequency:
 				nucleotide = get_highest_frequency(self.frequence_dict[position])
 				self.allele_1 += nucleotide
 				self.allele_2 += nucleotide
-		for i in range(len(self.allele_1)):
-			if self.allele_1[i] != self.allele_2[i]:
-				print i, self.allele_1[i], self.allele_2[i]
-		print self.allele_1
-		print self.allele_2
 	
 	def print_fasta(self, fasta_file, ind_id):
 		"""Print the sequences to the end of a fasta file"""
